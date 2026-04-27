@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgis/postgis:15-3.4
+    env_file: .env
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - geo_net
+
+  backend:
+    build: ./backend
+    env_file: .env
+    depends_on:
+      - db
+    networks:
+      - geo_net
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - geo_net
+
+volumes:
+  db_data:
+
+networks:
+  geo_net:
+    driver: bridge
